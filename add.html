@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Walk with me · Walk Clubs</title>
+<link rel="stylesheet" href="style.css">
+<style>
+main { text-align: center; max-width: 420px; }
+.lead { color: var(--muted); margin: 0 0 20px; }
+.btn { display: block; padding: 14px; border-radius: 14px; font-weight: 700; text-decoration: none; margin: 10px 0; }
+.open { background: var(--accent); color: #fff; font-size: 18px; }
+.store { border: 1.5px solid var(--muted); color: var(--text); }
+.pin { display: flex; justify-content: center; gap: 6px; margin: 10px 0 6px; }
+.pin span { width: 40px; height: 52px; border-radius: 10px; background: var(--card); font: 700 28px/52px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+.small { color: var(--muted); font-size: 14px; margin: 18px 0 4px; }
+[hidden] { display: none !important; }
+</style>
+</head>
+<body>
+<main>
+<h1>Walk Clubs</h1>
+<p class="lead">A friend wants to walk with you</p>
+
+<a id="open" class="btn open" href="walkclubs://add">Open in Walk Clubs</a>
+
+<p class="small">No app yet?</p>
+<a id="ios" class="btn store" href="https://apps.apple.com/app/id6824873979">App Store</a>
+<a id="android" class="btn store" href="https://play.google.com/store/apps/details?id=com.honeyhorny.walkclubs">Google Play</a>
+
+<div id="pinBox" hidden>
+  <p class="small">Then add this PIN</p>
+  <div id="pin" class="pin"></div>
+  <p class="small">Friends → PIN</p>
+</div>
+</main>
+<script>
+// The PIN rides after "#" (add.html#p=123456), so it never reaches the
+// server. The app reads walkclubs://add?p=123456 (src/systems/friends.js).
+(function () {
+  var match = /[#&?]p=(\d{6})(?!\d)/.exec(location.hash || location.search);
+  var pin = match ? match[1] : null;
+  var ua = navigator.userAgent || '';
+  var android = /Android/i.test(ua);
+  var ios = /iPhone|iPad|iPod/i.test(ua) || (/Macintosh/.test(ua) && 'ontouchend' in document);
+  var play = document.getElementById('android').href;
+  var open = document.getElementById('open');
+  var query = pin ? '?p=' + pin : '';
+  // Android opens the game if it's there, or Google Play if not.
+  open.href = android
+    ? 'intent://add' + query + '#Intent;scheme=walkclubs;package=com.honeyhorny.walkclubs;S.browser_fallback_url=' +
+      encodeURIComponent(play) + ';end'
+    : 'walkclubs://add' + query;
+  if (android) document.getElementById('ios').hidden = true;
+  if (ios) document.getElementById('android').hidden = true;
+  if (pin) {
+    var box = document.getElementById('pin');
+    pin.split('').forEach(function (d) {
+      var s = document.createElement('span');
+      s.textContent = d;
+      box.appendChild(s);
+    });
+    document.getElementById('pinBox').hidden = false;
+  }
+})();
+</script>
+</body>
+</html>
